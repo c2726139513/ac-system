@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ========== 公司 ==========
+model Company {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(200)
+  taxId       String?  @db.VarChar(50)
+  address     String?  @db.Text
+  phone       String?  @db.VarChar(50)
+  bankName    String?  @db.VarChar(200)
+  bankAccount String?  @db.VarChar(100)
+  isDefault   Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projects        Project[]
+  purchasePackages PurchasePackage[]
+  purchaseContracts PurchaseContract[]
+  salesContracts    SalesContract[]
+  payments         Payment[]
+  receipts         Receipt[]
+  purchaseInvoices PurchaseInvoice[]
+  salesInvoices    SalesInvoice[]
+}
+
+// ========== 项目 ==========
+model Project {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyId   String   @db.Uuid
+  name        String   @db.VarChar(200)
+  code        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  status      ProjectStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company          Company           @relation(fields: [companyId], references: [id])
+  purchasePackages PurchasePackage[]
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+// ========== 采购包 ==========
+model PurchasePackage {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @db.Uuid
+  companyId   String   @db.Uuid
+  name        String   @db.VarChar(200)
+  code        String   @db.VarChar(100)
+  description String?  @db.Text
+  amount      Decimal  @db.Decimal(14, 2)
+  status      PurchasePackageStatus @default(DRAFT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  company          Company           @relation(fields: [companyId], references: [id])
+  purchaseContracts PurchaseContract[]
+  salesContracts    SalesContract[]
+
+  @@unique([projectId, code])
+}
+
+enum PurchasePackageStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ========== 伙伴（供应商/客户） ==========
+enum PartnerType {
+  SUPPLIER
+  CUSTOMER
+  BOTH
+}
+
+model Partner {
+  id            String      @id @default(uuid()) @db.Uuid
+  name          String      @unique @db.VarChar(200)
+  type          PartnerType @default(SUPPLIER)
+  contactPerson String?     @db.VarChar(100)
+  phone         String?     @db.VarChar(50)
+  email         String?     @db.VarChar(100)
+  address       String?     @db.Text
+  notes         String?     @db.Text
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  purchaseContracts PurchaseContract[]
+  salesContracts    SalesContract[]
+}
+
+// ========== 采购合同 ==========
+model PurchaseContract {
+  id                String   @id @default(uuid()) @db.Uuid
+  purchasePackageId String   @db.Uuid
+  companyId         String   @db.Uuid
+  contractNo        String   @unique @db.VarChar(100)
+  contractName      String   @db.VarChar(200)
+  supplierId        String?  @db.Uuid
+  supplierName      String?  @db.VarChar(200)
+  amount            Decimal  @db.Decimal(14, 2)
+  signedDate        DateTime?
+  status            ContractStatus @default(DRAFT)
+  description       String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  purchasePackage PurchasePackage @relation(fields: [purchasePackageId], references: [id], onDelete: Cascade)
+  company         Company        @relation(fields: [companyId], references: [id])
+  supplier        Partner?       @relation(fields: [supplierId], references: [id])
+  payments        Payment[]
+  invoices        PurchaseInvoice[]
+}
+
+// ========== 销售合同 ==========
+model SalesContract {
+  id                String   @id @default(uuid()) @db.Uuid
+  purchasePackageId String   @db.Uuid
+  companyId         String   @db.Uuid
+  contractNo        String   @unique @db.VarChar(100)
+  contractName      String   @db.VarChar(200)
+  customerId        String?  @db.Uuid
+  customerName      String?  @db.VarChar(200)
+  amount            Decimal  @db.Decimal(14, 2)
+  signedDate        DateTime?
+  status            ContractStatus @default(DRAFT)
+  description       String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  purchasePackage PurchasePackage @relation(fields: [purchasePackageId], references: [id], onDelete: Cascade)
+  company         Company        @relation(fields: [companyId], references: [id])
+  customer        Partner?       @relation(fields: [customerId], references: [id])
+  receipts        Receipt[]
+  invoices        SalesInvoice[]
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  TERMINATED
+}
+
+// ========== 付款记录 ==========
+model Payment {
+  id                 String   @id @default(uuid()) @db.Uuid
+  purchaseContractId String   @db.Uuid
+  companyId          String   @db.Uuid
+  paymentNo          String?  @unique @db.VarChar(50)
+  amount             Decimal  @db.Decimal(14, 2)
+  paymentDate        DateTime
+  paymentMethod      PaymentMethod @default(BANK_TRANSFER)
+  description        String?  @db.Text
+  ofdFilePath        String?  @db.VarChar(500)
+  ofdOriginalName    String?  @db.VarChar(200)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  purchaseContract PurchaseContract @relation(fields: [purchaseContractId], references: [id], onDelete: Cascade)
+  company          Company         @relation(fields: [companyId], references: [id])
+}
+
+// ========== 收款记录 ==========
+model Receipt {
+  id              String   @id @default(uuid()) @db.Uuid
+  salesContractId String   @db.Uuid
+  companyId       String   @db.Uuid
+  receiptNo       String?  @unique @db.VarChar(50)
+  amount          Decimal  @db.Decimal(14, 2)
+  receiptDate     DateTime
+  paymentMethod   PaymentMethod @default(BANK_TRANSFER)
+  description     String?  @db.Text
+  ofdFilePath     String?  @db.VarChar(500)
+  ofdOriginalName String?  @db.VarChar(200)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  salesContract SalesContract @relation(fields: [salesContractId], references: [id], onDelete: Cascade)
+  company       Company      @relation(fields: [companyId], references: [id])
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CHECK
+  OTHER
+}
+
+// ========== 采购发票 ==========
+model PurchaseInvoice {
+  id                 String   @id @default(uuid()) @db.Uuid
+  purchaseContractId String   @db.Uuid
+  companyId          String   @db.Uuid
+  invoiceNo          String   @db.VarChar(50)
+  invoiceCode        String?  @db.VarChar(50)
+  invoiceDate        DateTime
+  amount             Decimal  @db.Decimal(14, 2)
+  taxAmount          Decimal  @db.Decimal(14, 2)
+  totalAmount        Decimal  @db.Decimal(14, 2)
+  sellerName         String?  @db.VarChar(200)
+  buyerName          String?  @db.VarChar(200)
+  invoiceType        InvoiceType @default(SPECIAL)
+  description        String?  @db.Text
+  ofdFilePath        String?  @db.VarChar(500)
+  ofdOriginalName    String?  @db.VarChar(200)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  purchaseContract PurchaseContract @relation(fields: [purchaseContractId], references: [id], onDelete: Cascade)
+  company          Company         @relation(fields: [companyId], references: [id])
+
+  @@unique([invoiceNo, invoiceCode])
+}
+
+// ========== 销售发票 ==========
+model SalesInvoice {
+  id              String   @id @default(uuid()) @db.Uuid
+  salesContractId String   @db.Uuid
+  companyId       String   @db.Uuid
+  invoiceNo       String   @db.VarChar(50)
+  invoiceCode     String?  @db.VarChar(50)
+  invoiceDate     DateTime
+  amount          Decimal  @db.Decimal(14, 2)
+  taxAmount       Decimal  @db.Decimal(14, 2)
+  totalAmount     Decimal  @db.Decimal(14, 2)
+  sellerName      String?  @db.VarChar(200)
+  buyerName       String?  @db.VarChar(200)
+  invoiceType     InvoiceType @default(SPECIAL)
+  description     String?  @db.Text
+  ofdFilePath     String?  @db.VarChar(500)
+  ofdOriginalName String?  @db.VarChar(200)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  salesContract SalesContract @relation(fields: [salesContractId], references: [id], onDelete: Cascade)
+  company       Company      @relation(fields: [companyId], references: [id])
+
+  @@unique([invoiceNo, invoiceCode])
+}
+
+enum InvoiceType {
+  SPECIAL
+  NORMAL
+  ELECTRONIC
+  OTHER
+}
+
+// ========== 自动编号计数器 ==========
+model SequenceCounter {
+  id         String   @id @default(uuid()) @db.Uuid
+  entityType String   @db.VarChar(50)
+  yearMonth  String   @db.VarChar(6)
+  seq        Int      @default(0)
+
+  @@unique([entityType, yearMonth])
+}
+
+// ========== 用户 & 权限 ==========
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(200)
+  name      String   @db.VarChar(100)
+  roleId    String   @db.Uuid
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  role Role @relation(fields: [roleId], references: [id])
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.Text
+  permissions String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+}
