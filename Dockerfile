@@ -1,6 +1,10 @@
 # ============ Build Stage ============
 FROM node:22-alpine AS builder
 
+# 国内镜像源
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
+RUN npm config set registry https://registry.npmmirror.com
+
 WORKDIR /app
 
 # 安装构建依赖（Prisma 需要）
@@ -25,6 +29,10 @@ RUN npm run build
 
 # ============ Production Stage ============
 FROM node:22-alpine AS runner
+
+# 国内镜像源
+RUN sed -i 's|dl-cdn.alpinelinux.org|mirrors.tuna.tsinghua.edu.cn|g' /etc/apk/repositories
+RUN npm config set registry https://registry.npmmirror.com
 
 WORKDIR /app
 
