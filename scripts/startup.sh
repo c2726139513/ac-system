@@ -6,4 +6,4 @@ npx prisma generate
 npx prisma db push
 
 echo "Starting application..."
-exec next start
+exec npx next start
