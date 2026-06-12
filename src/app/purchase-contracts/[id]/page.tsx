@@ -146,7 +146,7 @@ export default function PurchaseContractDetailPage() {
       )}
 
       {showPayForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowPayForm(false)}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">新增付款</h2>
             <div className="space-y-3">
@@ -162,7 +162,7 @@ export default function PurchaseContractDetailPage() {
       )}
 
       {showInvForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowInvForm(false)}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">新增发票</h2>
             <div className="space-y-3">

@@ -132,7 +132,7 @@ export default function SalesContractDetailPage() {
       )}
 
       {showRecForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowRecForm(false)}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">新增收款</h2>
             <div className="space-y-3">
@@ -148,7 +148,7 @@ export default function SalesContractDetailPage() {
       )}
 
       {showInvForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowInvForm(false)}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">新增发票</h2>
             <div className="space-y-3">
