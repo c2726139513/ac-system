@@ -32,7 +32,6 @@ export async function GET(
               orderBy: { createdAt: "desc" },
             },
           },
-          orderBy: { createdAt: "desc" },
         },
       },
     });
@@ -41,9 +40,23 @@ export async function GET(
       return error("项目不存在", 404);
     }
 
+    const codePattern = /^([A-Za-z]+)(\d+)(?:-(\d+))?$/;
+    const sortedPackages = [...project.purchasePackages].sort((a, b) => {
+      const ma = a.code.match(codePattern);
+      const mb = b.code.match(codePattern);
+      if (!ma || !mb) return a.code.localeCompare(b.code);
+      const letterCmp = ma[1].localeCompare(mb[1]);
+      if (letterCmp !== 0) return letterCmp;
+      const mainCmp = parseInt(ma[2], 10) - parseInt(mb[2], 10);
+      if (mainCmp !== 0) return mainCmp;
+      const subA = ma[3] !== undefined ? parseInt(ma[3], 10) : -1;
+      const subB = mb[3] !== undefined ? parseInt(mb[3], 10) : -1;
+      return subA - subB;
+    });
+
     const result = {
       ...project,
-      purchasePackages: project.purchasePackages.map((pkg) => ({
+      purchasePackages: sortedPackages.map((pkg) => ({
         ...pkg,
         amount: Number(pkg.amount),
         purchaseContracts: pkg.purchaseContracts.map((c) => {

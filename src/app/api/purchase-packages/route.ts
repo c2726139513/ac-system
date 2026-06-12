@@ -18,7 +18,20 @@ export async function GET(request: NextRequest) {
         project: { select: { id: true, name: true, code: true } },
         _count: { select: { purchaseContracts: true, salesContracts: true } },
       },
-      orderBy: { createdAt: "desc" },
+    });
+    // 按编码排序：字母前缀升序 → 主数字升序 → 副数字升序
+    const codePattern = /^([A-Za-z]+)(\d+)(?:-(\d+))?$/;
+    packages.sort((a, b) => {
+      const ma = a.code.match(codePattern);
+      const mb = b.code.match(codePattern);
+      if (!ma || !mb) return a.code.localeCompare(b.code);
+      const letterCmp = ma[1].localeCompare(mb[1]);
+      if (letterCmp !== 0) return letterCmp;
+      const mainCmp = parseInt(ma[2], 10) - parseInt(mb[2], 10);
+      if (mainCmp !== 0) return mainCmp;
+      const subA = ma[3] !== undefined ? parseInt(ma[3], 10) : -1;
+      const subB = mb[3] !== undefined ? parseInt(mb[3], 10) : -1;
+      return subA - subB;
     });
     return success(packages);
   } catch (e) {
