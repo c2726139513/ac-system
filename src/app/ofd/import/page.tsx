@@ -292,6 +292,7 @@ export default function OfdImportPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             purchaseContractId: contractId,
+            paymentNo: parsed.data.receiptNo || undefined,
             amount: parseFloat(parsed.data.amount) || 0,
             paymentDate: parsed.data.date || new Date().toISOString().split("T")[0],
             description:
@@ -306,6 +307,7 @@ export default function OfdImportPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             salesContractId: contractId,
+            receiptNo: parsed.data.receiptNo || undefined,
             amount: parseFloat(parsed.data.amount) || 0,
             receiptDate: parsed.data.date || new Date().toISOString().split("T")[0],
             description:

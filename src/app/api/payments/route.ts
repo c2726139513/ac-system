@@ -101,7 +101,8 @@ export async function POST(request: NextRequest) {
       },
     });
     return success({ ...payment, amount: Number(payment.amount) }, 201);
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.code === "P2002") return error("单据号已存在");
     return error(e instanceof Error ? e.message : "创建付款记录失败");
   }
 }
