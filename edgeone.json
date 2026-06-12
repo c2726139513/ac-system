@@ -1,0 +1,19 @@
+{
+  "_comment": "EdgeOne Pages 配置文件",
+  "_note": "确保 Prisma Client 在构建前生成",
+  "_docs": "https://pages.edgeone.ai/zh/document/edgeone.json",
+  "version": 2,
+  "buildCommand": "npm run build",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}

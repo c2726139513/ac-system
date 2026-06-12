@@ -1,11 +1,9 @@
 import "dotenv/config";
-import { PrismaClient } from "./src/generated/prisma/client.js";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "./src/generated/prisma/client";
 
 const url = process.env.DATABASE_URL!;
 console.log("DB URL:", url.replace(/:[^:@]+@/, ":****@"));
-const adapter = new PrismaPg({ connectionString: url });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   const tables = ["User", "Company", "Project", "Partner", "Role", "PurchasePackage", "PurchaseContract", "SalesContract", "Payment", "Receipt", "PurchaseInvoice", "SalesInvoice", "SequenceCounter"] as const;
