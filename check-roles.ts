@@ -1,8 +1,10 @@
 import "dotenv/config";
 import { PrismaClient } from "./src/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const url = process.env.DATABASE_URL!;
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: url });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const roles = await prisma.role.findMany();
