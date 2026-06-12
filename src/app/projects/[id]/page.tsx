@@ -69,6 +69,7 @@ export default function ProjectDetailPage() {
   const [supplierSearch, setSupplierSearch] = useState("");
   const [customerSearch, setCustomerSearch] = useState("");
   const [customerSearchInput, setCustomerSearchInput] = useState("");
+  const [packageSearch, setPackageSearch] = useState("");
 
   const fetchProject = useCallback(async () => {
     try {
@@ -183,6 +184,12 @@ export default function ProjectDetailPage() {
   if (loading) return <div className="text-muted">加载中...</div>;
   if (!project) return <div className="text-red-500">项目不存在</div>;
 
+  const filteredPackages = project.purchasePackages.filter(
+    (p) =>
+      p.name.includes(packageSearch) ||
+      p.code.includes(packageSearch)
+  );
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -202,11 +209,21 @@ export default function ProjectDetailPage() {
           className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">+ 新建采购包</button>
       </div>
 
-      {project.purchasePackages.length === 0 ? (
-        <p className="text-sm text-muted text-center py-8 bg-white rounded-xl border border-border">暂无采购包，请先创建</p>
+      <div className="mb-4">
+        <input
+          type="text"
+          value={packageSearch}
+          onChange={(e) => setPackageSearch(e.target.value)}
+          placeholder="搜索采购包名称或编码..."
+          className="w-full max-w-md px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {filteredPackages.length === 0 ? (
+        <p className="text-sm text-muted text-center py-8 bg-white rounded-xl border border-border">{packageSearch ? "无匹配采购包" : "暂无采购包，请先创建"}</p>
       ) : (
         <div className="space-y-6">
-          {project.purchasePackages.map((pkg) => (
+          {filteredPackages.map((pkg) => (
             <div key={pkg.id} className="bg-white rounded-xl shadow-sm border border-border p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
